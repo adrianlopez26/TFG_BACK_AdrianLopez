@@ -1,0 +1,35 @@
+Gestión de productos (agregar, editar, eliminar, categorías, imágenes, descripciones, precios).
+
+Carrito de compras (agregar productos, modificar cantidades , eliminar productos).
+
+Pasarela de pago (Puedo ponerlo como futuras mejoras). pero no tiene pq tenerlo
+
+Usuarios y roles (clientes, admin).
+
+Historial de pedidos y gestión de envíos.
+
+Búsqueda y filtrado de productos.
+
+Panel de administración para gestionar productos, pedidos y usuarios.
+
+Funcionalidad por puntos  un pedido de 20€ o mas te llevas 50 puntos, pedido de 50€ o mas 100 puntos y de 150€ o mas te llevas 200 puntos.
+
+Los puntos sirven para poder aplicarlos en siguientes compras cada 100 puntos 1€ de descuento.
+
+Un buen menú despegable para navegar por todos los apartados de la tienda, aparte de tener su precioso navbar.
+
+Los pedidos a partir de 100€ salen gratis, si no llegas a 100€ te cobran un dinero por el transporte del pedido.
+
+De momento solo vende productos a España pero en un futuro se podría ampliar la venta países.
+
+Una sección donde pueda añadir diferentes productos a mis favoritos cada cliente tendrá su propia lista de favoritos.
+
+Con el rol de administrador poder poner artículos con descuentos que duren x horas o x días.
+
+
+React
+
+
+Manejar los registros de los usuarios por local para que si borran la cache no se elimine ni su carrito ni sus articulos favoritos.
+Que cada cliente solo vea sus favortitos, que solo puedan ver su perfil no que puedan ver el de los otros clientes.
+Que al cerrar sesion todo se quede guardado en el local strorage para que cuando vuelva a iniciar sesión tenga lo que tenia antes de cerrar la sesion.
