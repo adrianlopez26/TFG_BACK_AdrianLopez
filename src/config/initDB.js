@@ -38,6 +38,15 @@ const tables = [
         subtotal DECIMAL(10,2) NOT NULL,
         FOREIGN KEY (pedido_id) REFERENCES pedidos(id) ON DELETE CASCADE,
         FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS carrito (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        usuario_id INT NOT NULL,
+        producto_id INT NOT NULL,
+        cantidad INT NOT NULL,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+        FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE
     )`
 ];
 

@@ -7,10 +7,12 @@ app.use(express.json());
 // Importar rutas
 const productRoutes = require('./src/routes/productRoutes');
 const userRoutes = require('./src/routes/userRoutes');
+const cartRoutes = require('./src/routes/cartRoutes');
 
 // Usar las rutas
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/cart', cartRoutes);
 
 const PORT = 3000;
 app.listen(PORT, () => {
