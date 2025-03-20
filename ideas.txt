@@ -33,3 +33,7 @@ React
 Manejar los registros de los usuarios por local para que si borran la cache no se elimine ni su carrito ni sus articulos favoritos.
 Que cada cliente solo vea sus favortitos, que solo puedan ver su perfil no que puedan ver el de los otros clientes.
 Que al cerrar sesion todo se quede guardado en el local strorage para que cuando vuelva a iniciar sesión tenga lo que tenia antes de cerrar la sesion.
+
+
+
+expres-validator = validar datos.
