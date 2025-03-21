@@ -52,24 +52,36 @@ router.post('/', async (req, res) => {
 
         // Validaciones obligatorias
         if (!nombre || !email || !password) {
-            return res.status(400).json({ error: "Todos los campos son obligatorios (nombre, email, contraseña)." });
+            return res.status(400).json({
+                ok: false,
+                error: { message: "Todos los campos son obligatorios." }
+            });
         }
 
         // Validar formato de email con regex
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            return res.status(400).json({ error: "El formato del email no es válido." });
+            return res.status(400).json({
+                ok: false,
+                error: { message: "El formato del email no es válido." }
+            });
         }
 
         // Validar longitud mínima de la contraseña
         if (password.length < 6) {
-            return res.status(400).json({ error: "La contraseña debe tener al menos 6 caracteres." });
+            return res.status(400).json({
+                ok: false,
+                error: { message: "La contraseña debe tener al menos 6 caracteres." }
+            });
         }
 
         // Comprobar si ya existe un usuario con ese email
         const [usuariosExistentes] = await db.promise().query("SELECT * FROM usuarios WHERE email = ?", [email]);
         if (usuariosExistentes.length > 0) {
-            return res.status(409).json({ error: "Ya existe un usuario registrado con este email." });
+            return res.status(409).json({
+                ok: false,
+                error: { message: "Ya existe un usuario registrado con este email." }
+            });
         }
 
         // Encriptar la contraseña
@@ -80,10 +92,14 @@ router.post('/', async (req, res) => {
         const [result] = await db.promise().query(sql, [nombre, email, hashedPassword, rol || "cliente"]);
 
         res.status(201).json({ message: "Usuario registrado con éxito", id: result.insertId });
-    } catch (error) {
-        console.error("❌ Error al registrar usuario:", error);
-        res.status(500).json({ error: "Error al registrar usuario" });
+    } 
+    catch (error) {
+    console.error("❌ Error al registrar usuario:", error);
+    res.status(500).json({
+        ok: false,
+        error: { message: "Error interno al registrar usuario." }});
     }
+    
 });
 
 // Iniciar sesión
