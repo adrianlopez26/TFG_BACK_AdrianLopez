@@ -123,4 +123,6 @@ router.delete('/:id', verificarToken, async (req, res) => {
     }
 });
 
+
+
 module.exports = router;
