@@ -49,30 +49,51 @@ router.post('/', verificarToken, async (req, res) => {
     }
 });
 
-// Obtener el historial de pedidos del usuario autenticado
+// Obtener el historial de pedidos del usuario autenticado con paginación
 router.get('/', verificarToken, async (req, res) => {
     try {
         const usuario_id = req.usuario.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const offset = (page - 1) * limit;
 
-        // Obtener los pedidos del usuario
+        // Obtener total de pedidos del usuario
+        const [countResult] = await db.promise().query(
+            "SELECT COUNT(*) AS total FROM pedidos WHERE usuario_id = ?", [usuario_id]
+        );
+        const total = countResult[0].total;
+        const totalPages = Math.ceil(total / limit);
+
+        // Obtener los pedidos paginados
         const [pedidos] = await db.promise().query(
-            `SELECT id, total, fecha, estado FROM pedidos WHERE usuario_id = ? ORDER BY fecha DESC`,
-            [usuario_id]
+            `SELECT id, total, fecha, estado 
+             FROM pedidos 
+             WHERE usuario_id = ? 
+             ORDER BY fecha DESC 
+             LIMIT ? OFFSET ?`,
+            [usuario_id, limit, offset]
         );
 
-        // Para cada pedido, obtener los productos
+        // Obtener productos por pedido
         for (let pedido of pedidos) {
-            const [detalles] = await db.promise().query(
+            const [productos] = await db.promise().query(
                 `SELECT p.nombre, dp.cantidad, dp.subtotal
                  FROM detalles_pedido dp
                  JOIN productos p ON dp.producto_id = p.id
                  WHERE dp.pedido_id = ?`,
                 [pedido.id]
             );
-            pedido.productos = detalles;
+            pedido.productos = productos;
         }
 
-        res.json(pedidos);
+        res.json({
+            page,
+            limit,
+            total,
+            totalPages,
+            pedidos
+        });
+
     } catch (error) {
         console.error("❌ Error al obtener historial de pedidos:", error);
         res.status(500).json({ error: "Error al obtener historial de pedidos" });
