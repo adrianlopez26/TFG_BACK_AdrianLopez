@@ -18,10 +18,15 @@ router.get('/', verificarToken, async (req, res) => {
         );
 
         res.json(carrito);
-    } catch (error) {
-        console.error("❌ Error al obtener el carrito:", error);
-        res.status(500).json({ error: "Error al obtener el carrito" });
     }
+    catch (error) {
+        console.error("❌ Error al obtener el carrito:", error);
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error interno al realizar la operación." }
+        });
+    }
+    
 });
 
 // Agregar producto al carrito
@@ -33,7 +38,10 @@ router.post('/', verificarToken, async (req, res) => {
         // Verificar que el producto existe
         const [producto] = await db.promise().query("SELECT * FROM productos WHERE id = ?", [producto_id]);
         if (producto.length === 0) {
-            return res.status(404).json({ error: "Producto no encontrado" });
+            return res.status(404).json({ 
+                false: ok,
+                error: {message: "Producto no encontrado" }
+            });
         }
 
         // Verificar si el producto ya está en el carrito
@@ -58,10 +66,15 @@ router.post('/', verificarToken, async (req, res) => {
         );
 
         res.json({ message: "Producto agregado al carrito" });
-    } catch (error) {
-        console.error("❌ Error al agregar producto al carrito:", error);
-        res.status(500).json({ error: "Error al agregar producto al carrito" });
     }
+    catch (error) {
+        console.error("❌ Error al agregar producto al carrito:", error);
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error interno al realizar la operación." }
+        });
+    }
+    
 });
 
 // Actualizar la cantidad de un producto en el carrito
@@ -78,7 +91,10 @@ router.put('/:id', verificarToken, async (req, res) => {
         );
 
         if (productoEnCarrito.length === 0) {
-            return res.status(404).json({ error: "Producto no encontrado en tu carrito" });
+            return res.status(404).json({ 
+                false: ok,
+                error: {message: "Producto no encontrado en tu carrito" }
+            });
         }
 
         // Si la cantidad es 0, eliminar el producto del carrito
@@ -91,10 +107,15 @@ router.put('/:id', verificarToken, async (req, res) => {
         await db.promise().query("UPDATE carrito SET cantidad = ? WHERE id = ?", [cantidad, id]);
 
         res.json({ message: "Cantidad actualizada correctamente" });
-    } catch (error) {
-        console.error("❌ Error al actualizar el carrito:", error);
-        res.status(500).json({ error: "Error al actualizar el carrito" });
     }
+    catch (error) {
+        console.error("❌ Error al actualizar el carrito:", error);
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error interno al realizar la operación." }
+        });
+    }
+    
 });
 
 // Eliminar un producto del carrito
@@ -110,17 +131,25 @@ router.delete('/:id', verificarToken, async (req, res) => {
         );
 
         if (productoEnCarrito.length === 0) {
-            return res.status(404).json({ error: "Producto no encontrado en tu carrito" });
+            return res.status(404).json({ 
+                false: ok,
+                error: {message:"Producto no encontrado en tu carrito" }
+            });
         }
 
         // Eliminar el producto del carrito
         await db.promise().query("DELETE FROM carrito WHERE id = ?", [id]);
 
         res.json({ message: "Producto eliminado del carrito correctamente" });
-    } catch (error) {
-        console.error("❌ Error al eliminar producto del carrito:", error);
-        res.status(500).json({ error: "Error al eliminar producto del carrito" });
     }
+    catch (error) {
+        console.error("❌ Error al eliminar producto del carrito:", error);
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error interno al realizar la operación." }
+        });
+    }
+    
 });
 
 module.exports = router;

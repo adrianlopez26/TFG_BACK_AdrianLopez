@@ -11,14 +11,21 @@ router.get('/', verificarToken, async (req, res) => {
     try {
         // Solo los administradores pueden ver todos los usuarios
         if (req.usuario.rol !== 'admin') {
-            return res.status(403).json({ error: "Acceso denegado. No tienes permisos para ver esta información." });
+            return res.status(403).json({ 
+                false: ok,
+                error: {message: "Acceso denegado. No tienes permisos para ver esta información." }
+            });
         }
 
         const [usuarios] = await db.promise().query("SELECT id, nombre, email, rol, fecha_registro FROM usuarios");
         res.json(usuarios);
-    } catch (error) {
+    }
+    catch (error) {
         console.error("❌ Error al obtener usuarios:", error);
-        res.status(500).json({ error: "Error al obtener usuarios" });
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error interno al realizar la operación." }
+        });
     }
 });
 
@@ -29,19 +36,29 @@ router.get('/:id', verificarToken, async (req, res) => {
 
         // Si el usuario autenticado no es admin y su ID no coincide con el de la solicitud, denegamos el acceso
         if (req.usuario.rol !== 'admin' && req.usuario.id != id) {
-            return res.status(403).json({ error: "Acceso denegado. No puedes ver información de otro usuario." });
+            return res.status(403).json({ 
+                false: ok,
+                error: {message: "Acceso denegado. No puedes ver información de otro usuario." }
+            });
         }
 
         const [usuario] = await db.promise().query("SELECT id, nombre, email, rol, fecha_registro FROM usuarios WHERE id = ?", [id]);
 
         if (usuario.length === 0) {
-            return res.status(404).json({ error: "Usuario no encontrado" });
+            return res.status(404).json({ 
+                false: ok,
+                error: {message: "Usuario no encontrado" }
+            });
         }
 
         res.json(usuario[0]);
-    } catch (error) {
+    }
+    catch (error) {
         console.error("❌ Error al obtener el usuario:", error);
-        res.status(500).json({ error: "Error al obtener el usuario" });
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error interno al realizar la operación." }
+        });
     }
 });
 
@@ -109,14 +126,20 @@ router.post('/login', async (req, res) => {
 
         // Verificar que se envió email y password
         if (!email || !password) {
-            return res.status(400).json({ error: "Email y contraseña son obligatorios" });
+            return res.status(400).json({
+                ok: false,
+                error: { message: "Email y contraseña son obligatorios." }
+            });
         }
 
         // Buscar al usuario en la base de datos
         const [usuarios] = await db.promise().query("SELECT * FROM usuarios WHERE email = ?", [email]);
 
         if (usuarios.length === 0) {
-            return res.status(401).json({ error: "Credenciales incorrectas" });
+            return res.status(401).json({ 
+                ok: false,
+                error: { message: "Credenciales incorrectas" }
+                });
         }
 
         const usuario = usuarios[0];
@@ -125,7 +148,10 @@ router.post('/login', async (req, res) => {
         const passwordMatch = await bcrypt.compare(password, usuario.password);
 
         if (!passwordMatch) {
-            return res.status(401).json({ error: "Credenciales incorrectas" });
+            return res.status(401).json({ 
+                ok : false,
+                error: {message: "Credenciales incorrectas" }
+                });
         }
 
         // Generar el token JWT
@@ -136,9 +162,13 @@ router.post('/login', async (req, res) => {
         );
 
         res.json({ message: "Login exitoso", token });
-    } catch (error) {
-        console.error("❌ Error al iniciar sesión:", error);
-        res.status(500).json({ error: "Error al iniciar sesión" });
+    } 
+    catch (error) {
+        console.error("❌ Error en el Login:", error);
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error interno al realizar la operación." }
+        });
     }
 });
 
@@ -150,13 +180,18 @@ router.put('/:id', verificarToken, async (req, res) => {
 
         // Verificar si el usuario autenticado es el dueño del perfil o un admin
         if (req.usuario.rol !== 'admin' && req.usuario.id != id) {
-            return res.status(403).json({ error: "Acceso denegado. No puedes modificar este usuario." });
+            return res.status(403).json({ 
+                false: ok,
+                error: { message: "Acceso denegado. No puedes modificar este usuario." }});
         }
 
         // Verificar si el usuario existe en la base de datos
         const [usuarioExistente] = await db.promise().query("SELECT * FROM usuarios WHERE id = ?", [id]);
         if (usuarioExistente.length === 0) {
-            return res.status(404).json({ error: "Usuario no encontrado" });
+            return res.status(404).json({ 
+                false: ok,
+                error: {message: "Usuario no encontrado" }
+            });
         }
 
         let hashedPassword = usuarioExistente[0].password; // Mantener la contraseña original
@@ -172,10 +207,15 @@ router.put('/:id', verificarToken, async (req, res) => {
         await db.promise().query(sql, [nombre, email, hashedPassword, nuevoRol, id]);
 
         res.json({ message: "Usuario actualizado con éxito" });
-    } catch (error) {
-        console.error("❌ Error al actualizar usuario:", error);
-        res.status(500).json({ error: "Error al actualizar usuario" });
     }
+    catch (error) {
+        console.error("❌ Error al actualizar usuario:", error);
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error interno al realizar la operación." }
+        });
+    }
+    
 });
 
 // Eliminar un usuario por ID (solo si es el mismo usuario o un administrador)
@@ -190,23 +230,34 @@ router.delete('/:id', verificarToken, async (req, res) => {
 
         // Un administrador no puede eliminarse a sí mismo
         if (req.usuario.rol === 'admin' && req.usuario.id == id) {
-            return res.status(403).json({ error: "Los administradores no pueden eliminarse a sí mismos." });
+            return res.status(403).json({ 
+                false: ok,
+                error: {message: "Los administradores no pueden eliminarse a sí mismos." }
+            });
         }
 
         // Verificar si el usuario existe en la base de datos
         const [usuarioExistente] = await db.promise().query("SELECT * FROM usuarios WHERE id = ?", [id]);
         if (usuarioExistente.length === 0) {
-            return res.status(404).json({ error: "Usuario no encontrado" });
+            return res.status(404).json({ 
+                false: ok,
+                error: {message: "Usuario no encontrado" }
+            });
         }
 
         // Eliminar usuario de la base de datos
         await db.promise().query("DELETE FROM usuarios WHERE id = ?", [id]);
 
         res.json({ message: "Usuario eliminado con éxito" });
-    } catch (error) {
-        console.error("❌ Error al eliminar usuario:", error);
-        res.status(500).json({ error: "Error al eliminar usuario" });
     }
+    catch (error) {
+        console.error("❌ Error al eliminar usuario:", error);
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error interno al realizar la operación." }
+        });
+    }
+    
 });
 
 

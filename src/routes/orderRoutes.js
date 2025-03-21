@@ -18,7 +18,9 @@ router.post('/', verificarToken, async (req, res) => {
         );
 
         if (carrito.length === 0) {
-            return res.status(400).json({ error: "El carrito está vacío" });
+            return res.status(400).json({ 
+                false: ok,
+                error: {message: "El carrito está vacío" }});
         }
 
         // Calcular el total del pedido
@@ -43,10 +45,15 @@ router.post('/', verificarToken, async (req, res) => {
         await db.promise().query("DELETE FROM carrito WHERE usuario_id = ?", [usuario_id]);
 
         res.json({ message: "Pedido creado con éxito", pedido_id, total });
-    } catch (error) {
-        console.error("❌ Error al crear el pedido:", error);
-        res.status(500).json({ error: "Error al crear el pedido" });
     }
+    catch (error) {
+        console.error("❌ Error al crear el pedido:", error);
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error interno al realizar la operación." }
+        });
+    }
+    
 });
 
 // Obtener el historial de pedidos del usuario autenticado con paginación
@@ -94,10 +101,15 @@ router.get('/', verificarToken, async (req, res) => {
             pedidos
         });
 
-    } catch (error) {
-        console.error("❌ Error al obtener historial de pedidos:", error);
-        res.status(500).json({ error: "Error al obtener historial de pedidos" });
     }
+    catch (error) {
+        console.error("❌ Error al obtener historial de pedidos:", error);
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error interno al realizar la operación." }
+        });
+    }
+    
 });
 
 // Cambiar el estado de un pedido (solo admin)
@@ -108,13 +120,19 @@ router.put('/:id/estado', verificarToken, async (req, res) => {
 
         // Solo los administradores pueden cambiar el estado
         if (req.usuario.rol !== 'admin') {
-            return res.status(403).json({ error: "Acceso denegado. Solo los administradores pueden cambiar el estado del pedido." });
+            return res.status(403).json({ 
+                false: ok, 
+                error: {message:"Acceso denegado. Solo los administradores pueden cambiar el estado del pedido." }
+            });
         }
 
         // Validar estado permitido
         const estadosPermitidos = ['pendiente', 'enviado', 'entregado'];
         if (!estadosPermitidos.includes(estado)) {
-            return res.status(400).json({ error: "Estado inválido. Debe ser: pendiente, enviado o entregado." });
+            return res.status(400).json({ 
+                false: ok, 
+                error: {message:"Estado inválido. Debe ser: pendiente, enviado o entregado." }
+            });
         }
 
         // Verificar que el pedido existe
@@ -124,7 +142,9 @@ router.put('/:id/estado', verificarToken, async (req, res) => {
         );
 
         if (pedidoExistente.length === 0) {
-            return res.status(404).json({ error: "Pedido no encontrado" });
+            return res.status(404).json({ 
+                faslse: ok, 
+                error: {message: "Pedido no encontrado" }});
         }
 
         // Actualizar el estado
@@ -134,10 +154,15 @@ router.put('/:id/estado', verificarToken, async (req, res) => {
         );
 
         res.json({ message: `Estado del pedido actualizado a "${estado}" correctamente.` });
-    } catch (error) {
-        console.error("❌ Error al actualizar el estado del pedido:", error);
-        res.status(500).json({ error: "Error al actualizar el estado del pedido" });
     }
+    catch (error) {
+        console.error("❌ Error al actualizar el estado del pedido:", error);
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error interno al realizar la operación." }
+        });
+    }
+    
 });
 
 // Obtener todos los pedidos (solo admin) con paginación
