@@ -140,5 +140,66 @@ router.put('/:id/estado', verificarToken, async (req, res) => {
     }
 });
 
+// Obtener todos los pedidos (solo admin) con paginación
+router.get('/admin', verificarToken, async (req, res) => {
+    try {
+        // Solo administradores pueden acceder
+        if (req.usuario.rol !== 'admin') {
+            return res.status(403).json({
+                ok: false,
+                error: { message: "Acceso denegado. Solo administradores pueden ver todos los pedidos." }
+            });
+        }
+
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
+        // Total de pedidos
+        const [countResult] = await db.promise().query("SELECT COUNT(*) AS total FROM pedidos");
+        const total = countResult[0].total;
+        const totalPages = Math.ceil(total / limit);
+
+        // Obtener pedidos paginados con nombre del usuario
+        const [pedidos] = await db.promise().query(
+            `SELECT p.id, p.usuario_id, u.nombre AS usuario, p.total, p.fecha, p.estado
+             FROM pedidos p
+             JOIN usuarios u ON p.usuario_id = u.id
+             ORDER BY p.fecha DESC
+             LIMIT ? OFFSET ?`,
+            [limit, offset]
+        );
+
+        // Añadir productos a cada pedido
+        for (let pedido of pedidos) {
+            const [productos] = await db.promise().query(
+                `SELECT pr.nombre, dp.cantidad, dp.subtotal
+                 FROM detalles_pedido dp
+                 JOIN productos pr ON dp.producto_id = pr.id
+                 WHERE dp.pedido_id = ?`,
+                [pedido.id]
+            );
+            pedido.productos = productos;
+        }
+
+        res.json({
+            ok: true,
+            page,
+            limit,
+            total,
+            totalPages,
+            pedidos
+        });
+
+    } catch (error) {
+        console.error("❌ Error al obtener pedidos (admin):", error);
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error al obtener pedidos para administradores." }
+        });
+    }
+});
+
+
 
 module.exports = router;
