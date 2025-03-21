@@ -3,15 +3,34 @@ const router = express.Router();
 const db = require('../config/db');
 
 // Obtener todos los productos
+// Obtener productos con paginación
 router.get('/', async (req, res) => {
     try {
-        const [productos] = await db.promise().query("SELECT * FROM productos");
-        res.json(productos);
+        const page = parseInt(req.query.page) || 1; // página actual
+        const limit = parseInt(req.query.limit) || 10; // cantidad por página
+        const offset = (page - 1) * limit;
+
+        // Obtener total de productos
+        const [countResult] = await db.promise().query("SELECT COUNT(*) AS total FROM productos");
+        const total = countResult[0].total;
+        const totalPages = Math.ceil(total / limit);
+
+        // Obtener los productos paginados
+        const [productos] = await db.promise().query("SELECT * FROM productos LIMIT ? OFFSET ?", [limit, offset]);
+
+        res.json({
+            page,
+            limit,
+            total,
+            totalPages,
+            productos
+        });
     } catch (error) {
-        console.error("❌ Error al obtener productos:", error);
+        console.error("❌ Error al obtener productos paginados:", error);
         res.status(500).json({ error: "Error al obtener productos" });
     }
 });
+
 
 // Obtener un producto por ID
 router.get('/:id', async (req, res) => {
