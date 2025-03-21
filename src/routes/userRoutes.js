@@ -50,15 +50,32 @@ router.post('/', async (req, res) => {
     try {
         const { nombre, email, password, rol } = req.body;
 
-        // Verificar que los campos obligatorios están presentes
+        // Validaciones obligatorias
         if (!nombre || !email || !password) {
-            return res.status(400).json({ error: "Faltan datos obligatorios" });
+            return res.status(400).json({ error: "Todos los campos son obligatorios (nombre, email, contraseña)." });
+        }
+
+        // Validar formato de email con regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: "El formato del email no es válido." });
+        }
+
+        // Validar longitud mínima de la contraseña
+        if (password.length < 6) {
+            return res.status(400).json({ error: "La contraseña debe tener al menos 6 caracteres." });
+        }
+
+        // Comprobar si ya existe un usuario con ese email
+        const [usuariosExistentes] = await db.promise().query("SELECT * FROM usuarios WHERE email = ?", [email]);
+        if (usuariosExistentes.length > 0) {
+            return res.status(409).json({ error: "Ya existe un usuario registrado con este email." });
         }
 
         // Encriptar la contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Insertar usuario en la base de datos
+        // Insertar nuevo usuario
         const sql = `INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)`;
         const [result] = await db.promise().query(sql, [nombre, email, hashedPassword, rol || "cliente"]);
 
