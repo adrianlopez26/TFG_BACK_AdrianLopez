@@ -39,7 +39,7 @@ router.post('/', verificarToken, async (req, res) => {
         const [producto] = await db.promise().query("SELECT * FROM productos WHERE id = ?", [producto_id]);
         if (producto.length === 0) {
             return res.status(404).json({ 
-                false: ok,
+                ok: false,
                 error: {message: "Producto no encontrado" }
             });
         }
@@ -92,7 +92,7 @@ router.put('/:id', verificarToken, async (req, res) => {
 
         if (productoEnCarrito.length === 0) {
             return res.status(404).json({ 
-                false: ok,
+                ok: false,
                 error: {message: "Producto no encontrado en tu carrito" }
             });
         }
@@ -132,7 +132,7 @@ router.delete('/:id', verificarToken, async (req, res) => {
 
         if (productoEnCarrito.length === 0) {
             return res.status(404).json({ 
-                false: ok,
+                ok: false,
                 error: {message:"Producto no encontrado en tu carrito" }
             });
         }

@@ -45,7 +45,7 @@ router.get('/:id', async (req, res) => {
 
         if (producto.length === 0) {
             return res.status(404).json({ 
-                false: ok, 
+                ok: false,
                 error: {message:"Producto no encontrado" }
             });
         }
@@ -70,7 +70,7 @@ router.post('/', async (req, res) => {
         // Verificar que todos los campos requeridos estén presentes
         if (!nombre || !precio || !stock || !categoria) {
             return res.status(400).json({ 
-                false: ok, 
+                ok: false,
                 error: {message: "Faltan datos obligatorios" }
             });
         }
@@ -100,7 +100,7 @@ router.put('/:id', async (req, res) => {
         const [productoExistente] = await db.promise().query("SELECT * FROM productos WHERE id = ?", [id]);
         if (productoExistente.length === 0) {
             return res.status(404).json({ 
-                false: ok, 
+                ok: false,
                 error: {message:"Producto no encontrado" }
             });
         }
@@ -130,7 +130,7 @@ router.delete('/:id', async (req, res) => {
         const [productoExistente] = await db.promise().query("SELECT * FROM productos WHERE id = ?", [id]);
         if (productoExistente.length === 0) {
             return res.status(404).json({ 
-                false: ok, 
+                ok: false,
                 error: {message: "Producto no encontrado" }});
         }
 

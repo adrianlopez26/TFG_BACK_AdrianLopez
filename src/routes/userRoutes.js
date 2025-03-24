@@ -12,7 +12,7 @@ router.get('/', verificarToken, async (req, res) => {
         // Solo los administradores pueden ver todos los usuarios
         if (req.usuario.rol !== 'admin') {
             return res.status(403).json({ 
-                false: ok,
+                ok: false,
                 error: {message: "Acceso denegado. No tienes permisos para ver esta información." }
             });
         }
@@ -37,7 +37,7 @@ router.get('/:id', verificarToken, async (req, res) => {
         // Si el usuario autenticado no es admin y su ID no coincide con el de la solicitud, denegamos el acceso
         if (req.usuario.rol !== 'admin' && req.usuario.id != id) {
             return res.status(403).json({ 
-                false: ok,
+                ok: false,
                 error: {message: "Acceso denegado. No puedes ver información de otro usuario." }
             });
         }
@@ -46,7 +46,7 @@ router.get('/:id', verificarToken, async (req, res) => {
 
         if (usuario.length === 0) {
             return res.status(404).json({ 
-                false: ok,
+                ok: false,
                 error: {message: "Usuario no encontrado" }
             });
         }
@@ -181,7 +181,7 @@ router.put('/:id', verificarToken, async (req, res) => {
         // Verificar si el usuario autenticado es el dueño del perfil o un admin
         if (req.usuario.rol !== 'admin' && req.usuario.id != id) {
             return res.status(403).json({ 
-                false: ok,
+                ok: false,
                 error: { message: "Acceso denegado. No puedes modificar este usuario." }});
         }
 
@@ -189,7 +189,7 @@ router.put('/:id', verificarToken, async (req, res) => {
         const [usuarioExistente] = await db.promise().query("SELECT * FROM usuarios WHERE id = ?", [id]);
         if (usuarioExistente.length === 0) {
             return res.status(404).json({ 
-                false: ok,
+                ok: false,
                 error: {message: "Usuario no encontrado" }
             });
         }
@@ -231,7 +231,7 @@ router.delete('/:id', verificarToken, async (req, res) => {
         // Un administrador no puede eliminarse a sí mismo
         if (req.usuario.rol === 'admin' && req.usuario.id == id) {
             return res.status(403).json({ 
-                false: ok,
+                ok: false,
                 error: {message: "Los administradores no pueden eliminarse a sí mismos." }
             });
         }
@@ -240,7 +240,7 @@ router.delete('/:id', verificarToken, async (req, res) => {
         const [usuarioExistente] = await db.promise().query("SELECT * FROM usuarios WHERE id = ?", [id]);
         if (usuarioExistente.length === 0) {
             return res.status(404).json({ 
-                false: ok,
+                ok: false,
                 error: {message: "Usuario no encontrado" }
             });
         }
