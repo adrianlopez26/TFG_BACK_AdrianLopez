@@ -193,5 +193,7 @@ router.put('/:id/descuento', verificarToken, async (req, res) => {
     }
 });
 
+// MIRAR .TXT DE IDEAS
+
 
 module.exports = router;
