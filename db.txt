@@ -49,3 +49,6 @@ CREATE DATABASE tienda_online;
     );
 
     ALTER TABLE usuarios ADD COLUMN puntos INT DEFAULT 0;
+
+    ALTER TABLE productos ADD COLUMN descuento FLOAT DEFAULT 0;
+    ALTER TABLE productos ADD COLUMN descuento_expira DATETIME DEFAULT NULL;
