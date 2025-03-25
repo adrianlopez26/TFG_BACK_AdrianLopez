@@ -17,7 +17,7 @@ router.get('/', verificarToken, async (req, res) => {
             });
         }
 
-        const [usuarios] = await db.promise().query("SELECT id, nombre, email, rol, fecha_registro FROM usuarios");
+        const [usuarios] = await db.promise().query("SELECT id, nombre, email, rol, puntos, fecha_registro FROM usuarios");
         res.json(usuarios);
     }
     catch (error) {
@@ -34,26 +34,34 @@ router.get('/:id', verificarToken, async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Si el usuario autenticado no es admin y su ID no coincide con el de la solicitud, denegamos el acceso
+        // Si no es admin y el ID no es suyo, denegamos
         if (req.usuario.rol !== 'admin' && req.usuario.id != id) {
             return res.status(403).json({ 
                 ok: false,
-                error: {message: "Acceso denegado. No puedes ver información de otro usuario." }
+                error: { message: "Acceso denegado. No puedes ver información de otro usuario." }
             });
         }
 
-        const [usuario] = await db.promise().query("SELECT id, nombre, email, rol, fecha_registro FROM usuarios WHERE id = ?", [id]);
+        // ✅ Incluimos puntos en la consulta
+        const [usuario] = await db.promise().query(
+            "SELECT id, nombre, email, rol, puntos, fecha_registro FROM usuarios WHERE id = ?",
+            [id]
+        );
 
         if (usuario.length === 0) {
             return res.status(404).json({ 
                 ok: false,
-                error: {message: "Usuario no encontrado" }
+                error: { message: "Usuario no encontrado" }
             });
         }
 
-        res.json(usuario[0]);
-    }
-    catch (error) {
+        // ✅ Devolvemos respuesta estructurada
+        res.json({
+            ok: true,
+            data: usuario[0]
+        });
+
+    } catch (error) {
         console.error("❌ Error al obtener el usuario:", error);
         res.status(500).json({
             ok: false,
@@ -61,6 +69,7 @@ router.get('/:id', verificarToken, async (req, res) => {
         });
     }
 });
+
 
 // Registrar un nuevo usuario
 router.post('/', async (req, res) => {

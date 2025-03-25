@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 const verificarToken = require('../middleware/authMiddleware');
 
-// Crear un nuevo pedido desde el carrito (usando mysql2/promise)
+// Crear un nuevo pedido desde el carrito
 router.post('/', verificarToken, async (req, res) => {
     let connection;
 
@@ -47,13 +47,46 @@ router.post('/', verificarToken, async (req, res) => {
         await connection.beginTransaction();
 
         // Calcular total del pedido
-        const total = carrito.reduce((sum, item) => sum + item.cantidad * item.precio, 0);
+        let total = carrito.reduce((sum, item) => sum + item.cantidad * item.precio, 0);
+
+        // Leer si el usuario quiere usar puntos
+        const { usarPuntos } = req.body;
+
+        // Obtener puntos del usuario
+        const [userRows] = await connection.query("SELECT puntos FROM usuarios WHERE id = ?", [usuario_id]);
+        let puntosUsuario = userRows[0].puntos || 0;
+
+        let puntosUsados = 0;
+        let descuento = 0;
+
+        // Aplicar descuento si el usuario lo solicita
+        if (usarPuntos && puntosUsuario >= 100) {
+            puntosUsados = Math.floor(puntosUsuario / 100) * 100;
+            descuento = puntosUsados / 100; // 100 puntos = 1€
+
+            // El descuento no puede ser mayor al total del pedido
+            if (descuento > total) {
+                descuento = total;
+                puntosUsados = Math.floor(total) * 100;
+            }
+
+            total -= descuento;
+        }
 
         // Insertar pedido
         const [pedidoResult] = await connection.query(
             "INSERT INTO pedidos (usuario_id, total) VALUES (?, ?)",
             [usuario_id, total]
         );
+
+        // Si se usaron puntos, descontarlos del usuario
+        if (puntosUsados > 0) {
+            await connection.query(
+                "UPDATE usuarios SET puntos = puntos - ? WHERE id = ?",
+                [puntosUsados, usuario_id]
+            );
+        }
+
 
         const pedido_id = pedidoResult.insertId;
 
@@ -75,6 +108,25 @@ router.post('/', verificarToken, async (req, res) => {
         // Vaciar carrito
         await connection.query("DELETE FROM carrito WHERE usuario_id = ?", [usuario_id]);
 
+        // Calcular puntos ganados (según total original antes de aplicar el descuento)
+        const totalOriginal = carrito.reduce((sum, item) => sum + item.cantidad * item.precio, 0);
+
+        let puntosGanados = 0;
+        if (totalOriginal >= 150) {
+            puntosGanados = 200;
+        } else if (totalOriginal >= 50) {
+            puntosGanados = 100;
+        } else if (totalOriginal >= 20) {
+            puntosGanados = 50;
+        }
+
+        if (puntosGanados > 0) {
+            await connection.query(
+                "UPDATE usuarios SET puntos = puntos + ? WHERE id = ?",
+                [puntosGanados, usuario_id]
+            );
+        }
+
         // Confirmar transacción
         await connection.commit();
 
@@ -82,7 +134,10 @@ router.post('/', verificarToken, async (req, res) => {
             ok: true,
             message: "Pedido creado con éxito",
             pedido_id,
-            total
+            total,
+            descuento_aplicado: descuento,
+            puntos_usados: puntosUsados,
+            puntos_ganados: puntosGanados
         });
 
     } catch (error) {
