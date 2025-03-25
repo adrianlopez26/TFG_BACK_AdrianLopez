@@ -37,3 +37,27 @@ Que al cerrar sesion todo se quede guardado en el local strorage para que cuando
 
 
 expres-validator = validar datos.
+
+
+
+IMPORTANTEEEEEEE !!!!!!!!!!!!!!!!!!!!!!!!!
+
+🟢 1. Filtros y búsqueda de productos (por nombre, categoría, etc.)
+Para el usuario o admin, útil cuando hay muchos productos.
+
+🟠 2. Mostrar “ofertas activas” como sección destacada
+Por ejemplo: GET /api/products/ofertas que devuelva solo los productos con descuento activo.
+
+🔵 3. Favoritos del cliente
+Que cada usuario pueda guardar productos en su lista de favoritos.
+
+Ya lo tenías pensado y es muy útil para la experiencia de compra.
+
+🟣 4. Sistema de envíos y estado de pedidos
+Marcar pedidos como “pendiente”, “enviado”, “entregado”.
+
+Agregar fecha de envío o tracking.
+
+⚫ 5. Panel de administración (backend + vistas con Astro/React)
+Empezar la parte visual de administración, paso a paso.
+

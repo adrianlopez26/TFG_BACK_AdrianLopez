@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const verificarToken = require('../middleware/authMiddleware');
+
 
 // Obtener todos los productos
 // Obtener productos con paginación
@@ -147,6 +149,48 @@ router.delete('/:id', async (req, res) => {
         });
     }
     
+});
+
+// Aplicar o quitar descuento temporal a un producto (solo admin)
+router.put('/:id/descuento', verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { descuento, expira } = req.body;
+
+        // Verificar si es admin
+        if (req.usuario.rol !== 'admin') {
+            return res.status(403).json({
+                ok: false,
+                error: { message: "Solo los administradores pueden aplicar descuentos." }
+            });
+        }
+
+        // Validar que el descuento sea un número válido
+        if (typeof descuento !== 'number' || descuento < 0 || descuento > 100) {
+            return res.status(400).json({
+                ok: false,
+                error: { message: "El descuento debe ser un número entre 0 y 100." }
+            });
+        }
+
+        // Aplicar el descuento y su expiración (puede ser null si queremos quitarlo)
+        await db.promise().query(
+            "UPDATE productos SET descuento = ?, descuento_expira = ? WHERE id = ?",
+            [descuento, expira || null, id]
+        );
+
+        res.json({
+            ok: true,
+            message: "Descuento aplicado correctamente."
+        });
+
+    } catch (error) {
+        console.error("❌ Error al aplicar descuento:", error);
+        res.status(500).json({
+            ok: false,
+            error: { message: "Error interno al aplicar descuento." }
+        });
+    }
 });
 
 
