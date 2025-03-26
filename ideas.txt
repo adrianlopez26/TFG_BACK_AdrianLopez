@@ -61,3 +61,4 @@ Agregar fecha de envío o tracking.
 ⚫ 5. Panel de administración (backend + vistas con Astro/React)
 Empezar la parte visual de administración, paso a paso.
 
+mirar lo de que datos guardo en el token
