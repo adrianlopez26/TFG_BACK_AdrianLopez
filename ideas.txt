@@ -54,7 +54,7 @@ Que cada usuario pueda guardar productos en su lista de favoritos.
 Ya lo tenías pensado y es muy útil para la experiencia de compra.
 
 🟣 4. Sistema de envíos y estado de pedidos
-Marcar pedidos como “pendiente”, “enviado”, “entregado”.
+Marcar pedidos como “pendiente”, “enviado”, “entregado”
 
 Agregar fecha de envío o tracking.
 
