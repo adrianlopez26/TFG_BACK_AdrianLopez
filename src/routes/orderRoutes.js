@@ -326,5 +326,28 @@ router.get('/admin', verificarToken, async (req, res) => {
 });
 
 
+// Obtener pedidos del usuario autenticado
+router.get('/user', verificarToken, async (req, res) => {
+    try {
+      const usuario_id = req.usuario.id;
+  
+      const [pedidos] = await db.promise().query(
+        `SELECT p.id, p.fecha, p.estado, p.total
+         FROM pedidos p
+         WHERE p.usuario_id = ?
+         ORDER BY p.fecha DESC`,
+        [usuario_id]
+      );
+  
+      res.json(pedidos);
+    } catch (error) {
+      console.error('❌ Error al obtener pedidos del usuario:', error);
+      res.status(500).json({
+        ok: false,
+        error: { message: 'Error interno al obtener los pedidos.' },
+      });
+    }
+  });
+  
 
 module.exports = router;
