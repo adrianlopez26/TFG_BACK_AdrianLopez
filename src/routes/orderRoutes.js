@@ -347,7 +347,53 @@ router.get('/user', verificarToken, async (req, res) => {
         error: { message: 'Error interno al obtener los pedidos.' },
       });
     }
-  });
+});
   
+
+// pedido específico por su ID incluyendo sus productos, cantidades y subtotales.
+router.get('/:id', verificarToken, async (req, res) => {
+    try {
+      const pedidoId = req.params.id;
+      const usuarioId = req.usuario.id;
+      const rolUsuario = req.usuario.rol;
+  
+      // Comprobar que el pedido existe y pertenece al usuario (a menos que sea admin)
+      const [pedidos] = await db.promise().query(
+        "SELECT * FROM pedidos WHERE id = ?",
+        [pedidoId]
+      );
+  
+      if (pedidos.length === 0) {
+        return res.status(404).json({ ok: false, error: { message: "Pedido no encontrado" } });
+      }
+  
+      const pedido = pedidos[0];
+  
+      if (rolUsuario !== 'admin' && pedido.usuario_id !== usuarioId) {
+        return res.status(403).json({ ok: false, error: { message: "No tienes acceso a este pedido" } });
+      }
+  
+      // Obtener los productos del pedido
+      const [productos] = await db.promise().query(
+        `SELECT dp.producto_id, p.nombre, dp.cantidad, dp.subtotal
+         FROM detalles_pedido dp
+         JOIN productos p ON dp.producto_id = p.id
+         WHERE dp.pedido_id = ?`,
+        [pedidoId]
+      );
+  
+      res.json({
+        id: pedido.id,
+        fecha: pedido.fecha,
+        estado: pedido.estado,
+        total: pedido.total,
+        productos
+      });
+    } catch (error) {
+      console.error("❌ Error al obtener detalle del pedido:", error);
+      res.status(500).json({ ok: false, error: { message: "Error interno al obtener detalle del pedido" } });
+    }
+});
+
 
 module.exports = router;
