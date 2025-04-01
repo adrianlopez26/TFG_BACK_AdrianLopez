@@ -437,7 +437,46 @@ router.get('/admin', verificarToken, async (req, res) => {
     } finally {
       if (connection) connection.release();
     }
-  });
+});
+  
+// Actualizar estado de un pedido (solo admin)
+router.put('/:id', verificarToken, async (req, res) => {
+    const { id } = req.params;
+    const { estado } = req.body;
+  
+    // Solo los administradores pueden modificar pedidos
+    if (req.usuario.rol !== 'admin') {
+      return res.status(403).json({
+        ok: false,
+        error: { message: 'Acceso denegado. Solo administradores pueden modificar pedidos.' }
+      });
+    }
+  
+    try {
+      // Validar que el estado sea uno de los permitidos
+      const estadosPermitidos = ['pendiente', 'enviado', 'entregado'];
+      if (!estadosPermitidos.includes(estado)) {
+        return res.status(400).json({
+          ok: false,
+          error: { message: 'Estado no válido.' }
+        });
+      }
+  
+      // Actualizar el estado del pedido
+      await db.promise().query("UPDATE pedidos SET estado = ? WHERE id = ?", [estado, id]);
+  
+      res.json({
+        ok: true,
+        message: `Estado del pedido actualizado a '${estado}'`
+      });
+    } catch (error) {
+      console.error('❌ Error al actualizar estado del pedido:', error);
+      res.status(500).json({
+        ok: false,
+        error: { message: 'Error al actualizar el pedido' }
+      });
+    }
+});
   
 
 module.exports = router;
