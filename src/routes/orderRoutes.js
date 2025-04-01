@@ -396,4 +396,48 @@ router.get('/:id', verificarToken, async (req, res) => {
 });
 
 
+// Obtener todos los pedidos (solo admin)
+router.get('/admin', verificarToken, async (req, res) => {
+    let connection;
+  
+    try {
+      // Solo los admins pueden acceder
+      if (req.usuario.rol !== 'admin') {
+        return res.status(403).json({
+          ok: false,
+          error: { message: 'Acceso denegado. Solo administradores.' }
+        });
+      }
+  
+      connection = await db.promise().getConnection();
+  
+      // Obtener todos los pedidos
+      const [pedidos] = await connection.query("SELECT * FROM pedidos");
+  
+      // Por cada pedido, obtener los productos
+      for (const pedido of pedidos) {
+        const [productos] = await connection.query(
+          `SELECT dp.cantidad, dp.subtotal, p.nombre
+           FROM detalles_pedido dp
+           JOIN productos p ON dp.producto_id = p.id
+           WHERE dp.pedido_id = ?`,
+          [pedido.id]
+        );
+  
+        pedido.productos = productos;
+      }
+  
+      res.json(pedidos);
+    } catch (error) {
+      console.error('❌ Error al obtener pedidos admin:', error);
+      res.status(500).json({
+        ok: false,
+        error: { message: 'Error al obtener los pedidos' }
+      });
+    } finally {
+      if (connection) connection.release();
+    }
+  });
+  
+
 module.exports = router;
