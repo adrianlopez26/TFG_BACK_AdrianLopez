@@ -152,4 +152,38 @@ router.delete('/:id', verificarToken, async (req, res) => {
     
 });
 
+
+// Eliminar producto del carrito usando producto_id (útil desde la vista de productos)
+router.delete('/producto/:productoId', verificarToken, async (req, res) => {
+    try {
+      const { productoId } = req.params;
+      const usuario_id = req.usuario.id;
+  
+      const [existente] = await db.promise().query(
+        "SELECT * FROM carrito WHERE usuario_id = ? AND producto_id = ?",
+        [usuario_id, productoId]
+      );
+  
+      if (existente.length === 0) {
+        return res.status(404).json({
+          ok: false,
+          error: { message: "Producto no encontrado en tu carrito" }
+        });
+      }
+  
+      await db.promise().query(
+        "DELETE FROM carrito WHERE usuario_id = ? AND producto_id = ?",
+        [usuario_id, productoId]
+      );
+  
+      res.json({ message: "Producto eliminado del carrito correctamente" });
+    } catch (error) {
+      console.error("❌ Error al eliminar producto del carrito:", error);
+      res.status(500).json({
+        ok: false,
+        error: { message: "Error interno al realizar la operación." }
+      });
+    }
+  });
+  
 module.exports = router;
