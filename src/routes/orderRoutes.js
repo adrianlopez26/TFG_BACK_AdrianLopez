@@ -153,9 +153,6 @@ router.post('/', verificarToken, async (req, res) => {
     
 });
 
-
-
-
 // Obtener el historial de pedidos del usuario autenticado con paginación
 router.get('/', verificarToken, async (req, res) => {
     try {

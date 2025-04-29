@@ -29,6 +29,34 @@ router.get('/', verificarToken, async (req, res) => {
     }
 });
 
+
+// Obtener el perfil del usuario autenticado
+router.get('/me', verificarToken, async (req, res) => {
+    try {
+      const usuarioId = req.usuario.id;
+  
+      const [result] = await db.promise().query(
+        "SELECT id, nombre, email, rol, puntos FROM usuarios WHERE id = ?",
+        [usuarioId]
+      );
+  
+      if (result.length === 0) {
+        return res.status(404).json({
+          ok: false,
+          error: { message: "Usuario no encontrado" },
+        });
+      }
+  
+      res.json(result[0]);
+    } catch (error) {
+      console.error("❌ Error al obtener perfil del usuario:", error);
+      res.status(500).json({
+        ok: false,
+        error: { message: "Error al obtener la información del usuario" },
+      });
+    }
+});
+
 // Obtener un usuario por ID
 router.get('/:id', verificarToken, async (req, res) => {
     try {
@@ -69,7 +97,6 @@ router.get('/:id', verificarToken, async (req, res) => {
         });
     }
 });
-
 
 // Registrar un nuevo usuario
 router.post('/', async (req, res) => {
@@ -167,8 +194,8 @@ router.post('/login', async (req, res) => {
         const token = jwt.sign(
             {
               id: usuario.id,
-              nombre: usuario.nombre,
-              email: usuario.email,
+              //nombre: usuario.nombre,
+              //email: usuario.email,
               rol: usuario.rol,
               puntos: usuario.puntos
             },

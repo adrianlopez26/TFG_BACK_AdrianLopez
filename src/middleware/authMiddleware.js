@@ -1,19 +1,21 @@
 const jwt = require('jsonwebtoken');
 
 const verificarToken = (req, res, next) => {
-    const token = req.header('Authorization');
+  const authHeader = req.headers['authorization']; // más seguro y compatible
 
-    if (!token) {
-        return res.status(401).json({ error: "Acceso denegado. No hay token." });
-    }
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: "Acceso denegado. Token faltante o mal formado." });
+  }
 
-    try {
-        const verificado = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
-        req.usuario = verificado;
-        next();
-    } catch (error) {
-        res.status(401).json({ error: "Token inválido." });
-    }
+  const token = authHeader.split(' ')[1]; // "Bearer <token>" → nos quedamos con el token
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.usuario = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Token inválido o expirado." });
+  }
 };
 
 module.exports = verificarToken;
