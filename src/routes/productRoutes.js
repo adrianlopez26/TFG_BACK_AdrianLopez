@@ -77,8 +77,11 @@ router.post('/', async (req, res) => {
             });
         }
 
-        const sql = `INSERT INTO productos (nombre, descripcion, precio, stock, imagen, categoria) VALUES (?, ?, ?, ?, ?, ?)`;
-        const [result] = await db.promise().query(sql, [nombre, descripcion, precio, stock, imagen, categoria]);
+        // Limpieza de comillas
+        const imagenLimpia = imagen?.replace(/^"(.*)"$/, '$1');
+
+        const sql = `UPDATE productos SET nombre = ?, descripcion = ?, precio = ?, stock = ?, imagen = ?, categoria = ? WHERE id = ?`;
+        await db.promise().query(sql, [nombre, descripcion, precio, stock, imagenLimpia, categoria, id]);
 
         res.status(201).json({ message: "Producto agregado con éxito", id: result.insertId });
     }
@@ -107,9 +110,12 @@ router.put('/:id', async (req, res) => {
             });
         }
 
+        // Limpieza de comillas
+        const imagenLimpia = imagen?.replace(/^"(.*)"$/, '$1');
+
         // Actualizar el producto
         const sql = `UPDATE productos SET nombre = ?, descripcion = ?, precio = ?, stock = ?, imagen = ?, categoria = ? WHERE id = ?`;
-        await db.promise().query(sql, [nombre, descripcion, precio, stock, imagen, categoria, id]);
+        await db.promise().query(sql, [nombre, descripcion, precio, stock, imagenLimpia, categoria, id]);
 
         res.json({ message: "Producto actualizado con éxito" });
     }
