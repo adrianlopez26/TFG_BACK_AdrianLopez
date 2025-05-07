@@ -61,13 +61,13 @@ CREATE DATABASE tienda_online;
         FOREIGN KEY (producto_id) REFERENCES productos(id)
     );
 
-CREATE TABLE reseñas (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  producto_id INT NOT NULL,
-  usuario_id INT NOT NULL,
-  estrellas INT NOT NULL CHECK (estrellas BETWEEN 1 AND 5),
-  comentario TEXT,
-  fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (producto_id) REFERENCES productos(id),
-  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+CREATE TABLE resenas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    producto_id INT NOT NULL,
+    comentario TEXT NOT NULL,
+    valoracion INT CHECK (valoracion BETWEEN 1 AND 5),
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (producto_id) REFERENCES productos(id)
 );

@@ -9,7 +9,13 @@ router.get('/:productoId', async (req, res) => {
 
   try {
     const [resenas] = await db.promise().query(
-      'SELECT r.id, r.usuario_id, r.producto_id, r.comentario, r.valoracion, u.nombre AS nombre_usuario, r.fecha_creacion FROM reseñas r JOIN usuarios u ON r.usuario_id = u.id WHERE producto_id = ? ORDER BY r.fecha_creacion DESC',
+      `SELECT r.id, r.usuario_id, r.producto_id, r.comentario, r.valoracion,
+              r.fecha_creacion AS fecha,
+              u.nombre AS nombre_usuario
+       FROM resenas r
+       JOIN usuarios u ON r.usuario_id = u.id
+       WHERE r.producto_id = ?
+       ORDER BY r.fecha_creacion DESC`,
       [productoId]
     );
 
@@ -31,7 +37,8 @@ router.post('/', verificarToken, async (req, res) => {
 
   try {
     await db.promise().query(
-      'INSERT INTO reseñas (usuario_id, producto_id, comentario, valoracion) VALUES (?, ?, ?, ?)',
+      `INSERT INTO resenas (usuario_id, producto_id, comentario, valoracion, fecha_creacion)
+       VALUES (?, ?, ?, ?, NOW())`,
       [usuario_id, producto_id, comentario, valoracion]
     );
 
