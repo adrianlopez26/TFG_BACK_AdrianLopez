@@ -13,7 +13,7 @@ const userRoutes = require('./src/routes/userRoutes');
 const cartRoutes = require('./src/routes/cartRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
 const favoritoRoutes = require('./src/routes/favoritoRoutes');
-const reseñaRoutes = require('./routes/reseñaRoutes');
+const resenaRoutes = require('./src/routes/resenaRoutes');
 
 // Usar las rutas
 app.use('/api/products', productRoutes);
@@ -21,7 +21,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/favoritos', favoritoRoutes);
-app.use('/api/reseñas', reseñaRoutes);
+app.use('/api/resenas', resenaRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
