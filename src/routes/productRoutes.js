@@ -18,7 +18,14 @@ router.get('/', async (req, res) => {
         const totalPages = Math.ceil(total / limit);
 
         // Obtener los productos paginados
-        const [productos] = await db.promise().query("SELECT * FROM productos LIMIT ? OFFSET ?", [limit, offset]);
+        const [productos] = await db.promise().query(`
+            SELECT p.*, 
+                   ROUND(AVG(r.valoracion), 1) AS media_valoracion
+            FROM productos p
+            LEFT JOIN resenas r ON p.id = r.producto_id
+            GROUP BY p.id
+            LIMIT ? OFFSET ?
+          `, [limit, offset]);
 
         res.json({
             page,
@@ -38,12 +45,18 @@ router.get('/', async (req, res) => {
     
 });
 
-
 // Obtener un producto por ID
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const [producto] = await db.promise().query("SELECT * FROM productos WHERE id = ?", [id]);
+        const [producto] = await db.promise().query(`
+            SELECT p.*, 
+                   ROUND(AVG(r.valoracion), 1) AS media_valoracion
+            FROM productos p
+            LEFT JOIN resenas r ON p.id = r.producto_id
+            WHERE p.id = ?
+            GROUP BY p.id
+          `, [id]);
 
         if (producto.length === 0) {
             return res.status(404).json({ 
@@ -198,8 +211,5 @@ router.put('/:id/descuento', verificarToken, async (req, res) => {
         });
     }
 });
-
-// MIRAR .TXT DE IDEAS
-
 
 module.exports = router;
