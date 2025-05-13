@@ -8,12 +8,21 @@ router.get('/', verificarToken, async (req, res) => {
     try {
         const usuario_id = req.usuario.id;
 
-        // Consultar el carrito del usuario
         const [carrito] = await db.promise().query(
-            `SELECT c.id, p.nombre, p.precio, c.cantidad, (p.precio * c.cantidad) AS total 
-            FROM carrito c
-            JOIN productos p ON c.producto_id = p.id
-            WHERE c.usuario_id = ?`, 
+            `SELECT 
+                c.id,
+                p.nombre,
+                p.precio,
+                p.descuento,
+                p.imagen,
+                c.cantidad,
+                ROUND(
+                    (p.precio * (1 - (p.descuento / 100))) * c.cantidad,
+                    2
+                ) AS total
+                FROM carrito c
+                JOIN productos p ON c.producto_id = p.id
+                WHERE c.usuario_id = ?`, 
             [usuario_id]
         );
 
@@ -26,7 +35,6 @@ router.get('/', verificarToken, async (req, res) => {
             error: { message: "Error interno al realizar la operación." }
         });
     }
-    
 });
 
 // Agregar producto al carrito
